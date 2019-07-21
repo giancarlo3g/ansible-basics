@@ -1,0 +1,14 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: Creates a group named food
+      group: name=food state=present
+    - name: Creates a user named enchilada and whose primary group is food
+      user: name=enchilada group=food state=present
+    - name: Verify readhat group
+      group: name=redhat gid=1500 state=present
+    - name: Create a user redhat with a primary group redhat. Ensure that the user ID and group ID is 1500
+      user: name=redhat group=redhat uid=1500 state=present
+    - name: Create a directory /data/project/RHT owned by the redhat user and group
+      file: path=/data/project/RHT state=directory gropu=redhat owner=redhat

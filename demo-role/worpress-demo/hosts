@@ -1,0 +1,11 @@
+# this file should be under /etc/ansible/
+
+[demo_hosts]
+node01 ansible_user=ubuntu
+node02 ansible_user=ubuntu
+
+[web_hosts]
+node01 ansible_user=ubuntu
+
+[db_hosts]
+node02 ansible_user=ubuntu

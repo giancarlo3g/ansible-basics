@@ -1,0 +1,52 @@
+---
+- hosts: web_servers
+  vars:
+  tasks:
+    # loop example    
+    - name: Install Apache2, nginx, tmux
+      apt: name={{item}}} update_cache=yes
+      with_items: 
+        - apache2
+        - nginx
+        - tmux
+
+    - name: Copy data files
+      copy: src=index.html dest=/var/www/html/
+      register: copy_status
+
+    - name: Stop the service
+      service: name=apache2 state=started
+
+      # template example
+    - name: Copy template file
+      template: src=current.html.j2 dest=/var/www/html/current.html
+      notify: Start apache
+
+      # debug example
+    - name: Check uptime
+      shell: uptime
+      register: uptime_var
+
+    - name: Print uptime
+      debug: var=uptime_var
+
+    - name: Print copy status
+      debug: var=copy_status
+
+    # conditionals
+    - name: Testing conditionals
+      shell: uptime
+      when: ansible_host=="node02"
+
+    # until
+    - name: Testing until
+      shell: service apache2 status
+      register: result
+      until: result.stdout.fin("active (running") != -1 # indicates not found
+      retries: 5
+      delay: 5
+
+  handlers:
+    # handler example
+    - name: Start apache
+      service: name=apache2 state=restarted

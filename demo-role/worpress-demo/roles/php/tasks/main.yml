@@ -1,0 +1,8 @@
+---
+# tasks file for php
+  - name: Installa php extension
+    apt: name={{ item }} state=present
+    sudo: yes
+    with_items:
+      - php-gd
+      #- libssh2-php

@@ -1,0 +1,16 @@
+ansible-doc -l
+ansible-doc file
+
+modules:
+- ping
+- setup
+- file
+- yum
+- apt
+- service
+- user
+- command
+
+ansible -m ping all
+ansible node01 -m setup
+ansible node01 -m user -a "user=tetracloud" -b
