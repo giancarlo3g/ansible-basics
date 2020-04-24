@@ -1,3 +1,13 @@
+# create encrypted file
 ansible-vault create foo.yml
+
+# see/edit encrypted file
 ansible-vault view foo.yml
+
 ansible-playbook site.yml -ask-vault-pass
+
+# When running ansible playbooks
+ansible-playbook --vault-password-file=vault_password -i inventory_file some_playabook.yml
+
+# Encrypt a role's defaults/main.yml file
+ansible-vault encrypt defaults/main.yml

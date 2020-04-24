@@ -1,0 +1,38 @@
+---
+- hosts: packet
+- name: install basic
+  apt: 
+    name: {{ items }}
+    update_cache: yes
+    state: present
+    sudo: yes
+    with_items:
+      - qemu-kvm
+      - libvirt-bin
+      - virtinst
+      - bridge-utils
+- name: create admin user with passwd
+  user:
+    name: admin
+    home: /home/admin
+    password: admin
+
+#    - name: create admin home directory
+
+
+
+#    - name: change home admin permissions
+
+
+
+#    - name: create br-mgmt bridge interface with ip
+
+
+#    - name: create br-wan bridge interface
+
+
+
+#    - name: copy files to server
+
+
+
