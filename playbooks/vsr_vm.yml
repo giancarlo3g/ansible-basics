@@ -1,14 +1,28 @@
 # ansible-playbook -b --private-key /Users/giancarlo3g/.ssh/id_rsa_multipass --ask-vault-pass vsr_vm.yml
 
 # sudo pip install passlib is required on MacOS for encrypted passwords
-# brew install dbus for nmcli
 # ansible-galaxy install mrlesmithjr.netplan for netplan
 # ansible-vault create password.yml -> add password in plain text
 
 ---
 - hosts: packet
 
-      # create br-mgmt interface with netplan
+  vars:
+  tasks:
+    - name: install basic pack
+      apt: 
+        name: ['qemu-kvm', 'libvirt-bin', 'vsftpd']
+        update_cache: yes
+      become: yes
+
+    - name: create admin user with passwd
+      user:
+        name: admin
+        home: /home/admin
+        password: "{{ 'admin' | password_hash('sha512') }}" # check vault file for plain text password
+        update_password: always
+
+  # create br-mgmt and br-wan bridges
   roles:
     - role: mrlesmithjr.netplan
       become: yes
@@ -23,46 +37,9 @@
               addresses:
                 - 192.168.1.1/24 
               gateway4: 192.168.1.1
-
-  vars:
-  tasks:
-
-    - name: install basic
-      apt: 
-        name: ['qemu-kvm', 'libvirt-bin', 'virtinst', 'vsftpd', 'network-manager', 'python-dbus', 'libnm-glib-dev']
-        update_cache: yes
-      become: yes
-
-    - name: create admin user with passwd
-      user:
-        name: admin
-        home: /home/admin
-        password: "{{ 'admin' | password_hash('sha512') }}" # check vault file for plain text password
-        update_password: always
-
-    - name: create br-mgmt bridge
-      nmcli:
-        conn_name: br-mgmt
-        type: bridge
-        ip4: 192.168.1.1/24
-        gw4: 192.168.1.1
-        state: present
-        autoconnect: yes
-    - name: create br-wan bridge
-      nmcli:
-        conn_name: br-wan
-        type: bridge
-        state: present
-        autoconnect: yes
-
-
-
-
-#    - name: create br-mgmt bridge interface with ip
-
-
-#    - name: create br-wan bridge interface
-
+            br-wan:
+              dhcp4: yes
+      netplan_apply: True
 
 
 #    - name: copy files to server
