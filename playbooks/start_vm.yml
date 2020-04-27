@@ -1,0 +1,46 @@
+# ansible-playbook -b --private-key /Users/giancarlo3g/.ssh/id_rsa_multipass --ask-vault-pass start_vm.yml
+
+# sudo pip install passlib is required on MacOS for encrypted passwords
+# ansible-galaxy install mrlesmithjr.netplan for netplan
+# ansible-vault create password.yml -> add password in plain text
+
+---
+- hosts: packet
+
+  vars:
+    license_path: "/Users/giancarlo3g/Downloads/VSR-SIM_R20_license.txt"
+    xml_path: "/Users/giancarlo3g/Desktop/vsr01-sr1.xml"
+    image_path: "/Users/giancarlo3g/Downloads/vm/sros-i386/sros-vm.qcow2"
+
+  tasks:
+
+##################### instantiate VMs #########################
+
+    - name: define vm
+      become: yes
+      virt:
+        command: define
+        xml: /etc/libvirt/qemu/vsr01-sr1.xml
+    - name: start vm
+      become: yes
+      virt:
+        name: vsr01-sr1
+        state: running
+    - name: set autostart for VM
+      become: yes
+      virt:
+        name: vsr01-sr1
+        autostart: yes
+
+#############################################################
+
+
+
+
+
+
+
+
+
+
+

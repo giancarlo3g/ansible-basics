@@ -1,0 +1,28 @@
+# ansible-playbook -b --private-key /Users/giancarlo3g/.ssh/id_rsa_multipass --ask-vault-pass vsr_vm.yml
+
+# ansible-galaxy install mrlesmithjr.netplan for netplan
+# ansible-vault create password.yml -> add password in plain text
+
+---
+- hosts: packet
+  vars:
+  tasks:
+  roles:
+    - role: mrlesmithjr.netplan
+      become: yes
+      netplan_enabled: true
+      netplan_remove_existing: no
+      netplan_config_file: /etc/netplan/my_netplan.yaml
+      netplan_renderer: networkd 
+      netplan_configuration:
+        network:
+          version: 2
+          bridges:
+            br-mgmt:
+              addresses:
+                - 192.168.1.1/24 
+              #gateway4: 192.168.1.1
+            br-wan:
+              dhcp4: yes
+      netplan_apply: True
+
