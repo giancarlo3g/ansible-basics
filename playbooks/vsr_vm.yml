@@ -12,48 +12,25 @@
     src_xml_path: "/Users/giancarlo3g/Desktop/vsr01-sr1.xml"
     src_image_path: "/Users/giancarlo3g/Downloads/vm/sros-i386/sros-vm.qcow2"
 
-  # create br-mgmt and br-wan bridges
+  # create br-mgmt and br-wan bridges for Ubuntu 18.0 with netplan
   roles:
-#    - role: mrlesmithjr.netplan
-#      become: yes
-#      netplan_enabled: true
-#      netplan_remove_existing: no
-#      netplan_config_file: /etc/netplan/my_netplan.yaml
-#      netplan_renderer: networkd 
-#      netplan_configuration:
-#        network:
-#          version: 2
-#          bridges:
-#            br-mgmt:
-#              addresses:
-#                - 192.168.1.1/24 
-#              #gateway4: 192.168.1.1
-#            br-wan:
-#              dhcp4: yes
-#      netplan_apply: True
-
-    - role: mrlesmithjr.config-interfaces
+    - role: mrlesmithjr.netplan
       become: yes
-      enable_configured_interfaces_after_defining: true
-      network_bridges:
-        - name: br-mgmt
-          configure: true
-          enable: true
-          comment: br-mgmt
-          method: static
-          address: 192.168.1.1
-          netmask_cidr: 24
-          # gateway: 192.168.1.1
-          parameters:
-          - param: bridge_stp
-            val: off
-        - name: br-wan
-          configure: true
-          enable: true
-          comment: br-wan
-          method: static
-
-
+      netplan_enabled: true
+      netplan_remove_existing: no
+      netplan_config_file: /etc/netplan/my_netplan.yaml
+      netplan_renderer: networkd 
+      netplan_configuration:
+        network:
+          version: 2
+          bridges:
+            br-mgmt:
+              addresses:
+                - 192.168.1.1/24 
+              #gateway4: 192.168.1.1
+            br-wan:
+              dhcp4: yes
+      netplan_apply: True
 
   tasks:
     - name: install qemu, libvirt, vsftpd

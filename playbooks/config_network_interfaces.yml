@@ -1,0 +1,26 @@
+---
+- hosts: packet
+  vars:
+
+  # networking configuration for Ubuntu 16.0 using /etc/network/interfaces file
+  roles:
+    - role: mrlesmithjr.config-interfaces
+      become: yes
+      enable_configured_interfaces_after_defining: true
+      network_bridges:
+        - name: br-mgmt
+          configure: true
+          enable: true
+          comment: br-mgmt
+          method: static
+          address: 192.168.1.1
+          netmask_cidr: 24
+          # gateway: 192.168.1.1
+          parameters:
+          - param: bridge_stp
+            val: off
+        - name: br-wan
+          configure: true
+          enable: true
+          comment: br-wan
+          method: static
