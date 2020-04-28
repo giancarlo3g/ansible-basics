@@ -1,7 +1,8 @@
-# ansible-playbook -b --private-key /Users/giancarlo3g/.ssh/id_rsa_multipass --ask-vault-pass vsr_vm.yml
+# ansible-playbook -b --private-key ~/.ssh/id_rsa_multipass --ask-vault-pass vsr_vm_infra.yml
 
-# sudo pip install passlib is required on MacOS for encrypted passwords
+# on MacOS host
 # ansible-galaxy install mrlesmithjr.netplan for netplan
+# sudo pip3 install passlib (required on MacOS for encrypted passwords)
 # ansible-vault create password.yml -> add password in plain text
 
 ---
@@ -16,7 +17,6 @@
   roles:
     - role: mrlesmithjr.netplan
       become: yes
-      netplan_enabled: true
       netplan_remove_existing: no
       netplan_config_file: /etc/netplan/my_netplan.yaml
       netplan_renderer: networkd 
@@ -27,15 +27,14 @@
             br-mgmt:
               addresses:
                 - 192.168.1.1/24 
-              #gateway4: 192.168.1.1
             br-wan:
               dhcp4: yes
       netplan_apply: True
 
   tasks:
-    - name: install qemu, libvirt, vsftpd
+    - name: install vsftpd for FTP server
       apt: 
-        name: ['qemu-kvm', 'libvirt-bin', 'vsftpd']
+        name: ['vsftpd']
         update_cache: yes
       become: yes
 
@@ -46,42 +45,24 @@
         password: "{{ 'admin' | password_hash('sha512') }}" # check vault file for plain text password
         update_password: always
 
-    # copy vsr license to server
     - name: create license directory
       file:
         path: /home/admin/license
         state: directory
         owner: admin
-    - name: copy files to server
+
+    - name: copy license to server
       copy:
         src: "{{ src_license_path }}"
         dest: /home/admin/license/VSR-SIM_R20_license.txt
       register: copy_status
 
-    # create lab directory for vsr config files
-    - name: create lab directory
+    - name: create lab directory for config files
       file:
         path: /home/admin/lab
         state: directory
         owner: admin
 
-################## iterate for several VMs ##################
-
-    # copy vsr xml to server
-    - name: copy xml to server
-      become: yes
-      copy:
-        src: "{{ src_xml_path }}"
-        dest: /etc/libvirt/qemu/vsr01-sr1.xml
-      register: copy_status
-
-    # copy vsr image to server
-    - name: copy vsr image to server
-      become: yes
-      copy:
-        src: "{{ src_image_path }}"
-        dest: /var/lib/libvirt/images/sros-vm.qcow2
-      register: copy_status
 
 
 

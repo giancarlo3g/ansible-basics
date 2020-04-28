@@ -1,38 +1,67 @@
-# ansible-playbook -b --private-key /Users/giancarlo3g/.ssh/id_rsa_multipass --ask-vault-pass start_vm.yml
+# ansible-playbook -b --private-key ~/.ssh/id_rsa_multipass start_vm.yml
 
-# sudo pip install passlib is required on MacOS for encrypted passwords
-# ansible-galaxy install mrlesmithjr.netplan for netplan
-# ansible-vault create password.yml -> add password in plain text
+
+# on MacOS host
+# xcode-select --install
+# brew install libvirt
+# pip3 install libvirt-python
 
 ---
-- hosts: packet
+- hosts: test
 
   vars:
-    license_path: "/Users/giancarlo3g/Downloads/VSR-SIM_R20_license.txt"
-    xml_path: "/Users/giancarlo3g/Desktop/vsr01-sr1.xml"
-    image_path: "/Users/giancarlo3g/Downloads/vm/sros-i386/sros-vm.qcow2"
+    src_license_path: "/Users/giancarlo3g/Downloads/VSR-SIM_R20_license.txt"
+    src_xml_path: "/Users/giancarlo3g/Desktop/vsr01-sr1.xml"
+    src_image_path: "/Users/giancarlo3g/Downloads/vm/sros-i386/sros-vm.qcow2"
 
   tasks:
+    - name: "install libraries"
+      apt:
+        name: ['qemu-kvm', 'libvirt-bin', 'virt-manager', 'virtinst', 'qemu-utils', 'qemu-system-x86', 'sgabios', 'pkg-config', 'libvirt-dev', 'python3-pip']
+        update_cache: yes
+      become: yes
+      vars:
+        ansible_python_interpreter: '/usr/bin/python3'
+      when: ansible_os_family == "Debian"
 
-##################### instantiate VMs #########################
+    - name: install libvirt-python and lxml
+      pip:
+        name: ['libvirt-python', 'lxml']
+        executable: pip3
+
+    - name: copy xml to server
+      become: yes
+      copy:
+        src: "{{ src_xml_path }}"
+        dest: /etc/libvirt/qemu/vsr01-sr1.xml
+      register: copy_status
+
+    - name: copy vsr image to server
+      become: yes
+      copy:
+        src: "{{ src_image_path }}"
+        dest: /var/lib/libvirt/images/sros-vm.qcow2
+      register: copy_status
+
+# placeholder until can solve virt define error 
+#    - name: define vm
+#      become: yes
+#      become_user: ubuntu  
+#      virt:
+#        command: define
+#        xml: /etc/libvirt/qemu/vsr01-sr1.xml
+#        uri: 'qemu:///system'
+#        autostart: yes
 
     - name: define vm
       become: yes
-      virt:
-        command: define
-        xml: /etc/libvirt/qemu/vsr01-sr1.xml
+      become_user: ubuntu
+      shell: virsh define /etc/libvirt/qemu/vsr01-sr1.xml
+
     - name: start vm
-      become: yes
       virt:
         name: vsr01-sr1
         state: running
-    - name: set autostart for VM
-      become: yes
-      virt:
-        name: vsr01-sr1
-        autostart: yes
-
-#############################################################
 
 
 
