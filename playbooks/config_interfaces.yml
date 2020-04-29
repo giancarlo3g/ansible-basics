@@ -1,0 +1,44 @@
+# ansible-playbook -b --private-key ~/.ssh/id_rsa_multipass config_interfaces.yml
+
+---
+- hosts: test
+  vars:
+
+  tasks:
+
+    - name: install bridge-utils
+      apt: 
+        name: ['bridge-utils']
+      become: yes
+
+    - name: add bridge interfaces to /etc/network/interfaces
+      become: yes
+      blockinfile:
+        path: /etc/network/interfaces
+        backup: yes
+        block: |
+          
+          iface eth0 inet manual
+          
+          auto br-mgmt
+          iface br-mgmt inet static
+              address 192.168.1.1
+              netmask 255.255.255.0
+              bridge_ports eth0
+              bridge_stp off
+              bridge_fd 0
+              bridge_maxwait 0
+
+          auto br-wan
+          iface br-wan inet static
+              address 192.168.2.1
+              netmask 255.255.255.0
+              bridge_ports eth0
+              bridge_stp off
+              bridge_fd 0
+              bridge_maxwait 0
+
+    - name: restart network interfaces
+      become: yes
+      shell: /etc/init.d/networking restart
+      

@@ -1,3 +1,8 @@
+# ansible-playbook -b --private-key ~/.ssh/id_rsa config_network_interfaces.yml
+
+# on MacOS host
+# ansible-galaxy install mrlesmithjr.config-interfaces for network configuration
+
 ---
 - hosts: packet
   vars:
@@ -6,21 +11,25 @@
   roles:
     - role: mrlesmithjr.config-interfaces
       become: yes
-      enable_configured_interfaces_after_defining: true
+      #enable_configured_interfaces_after_defining: true
       network_bridges:
         - name: br-mgmt
           configure: true
           enable: true
           comment: br-mgmt
           method: static
-          address: 192.168.1.1
-          netmask_cidr: 24
+          #address: 192.168.1.1
+          #netmask_cidr: 24
           # gateway: 192.168.1.1
           parameters:
           - param: bridge_stp
             val: off
+          ports:
+            - bond0
         - name: br-wan
           configure: true
           enable: true
           comment: br-wan
           method: static
+          ports:
+            - bond0
