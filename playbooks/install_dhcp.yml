@@ -1,0 +1,49 @@
+# ansible-playbook -b --private-key ~/.ssh/id_rsa_multipass install_dhcp.yml
+
+---
+- hosts: test
+  vars:
+
+  tasks:
+    - name: install dhcp library
+      apt:
+        name: isc-dhcp-server
+      become: yes
+
+    - name: backup original dhcpd.conf file
+      become: yes
+      copy:
+        remote_src: yes
+        src: /etc/dhcp/dhcpd.conf
+        dest: /etc/dhcp/dhcpd.conf.bkp
+
+    - name: delete dchpd file
+      become: yes
+      file:
+        path: /etc/dhcp/dhcpd.conf
+        state: absent
+    
+    - name: add subnet
+      become: yes
+      blockinfile:
+        path: /etc/dhcp/dhcpd.conf
+        create: yes
+        block: |
+          ddns-update-style none;
+
+          option domain-name "example.lab";
+          option domain-name-servers 10.1.1.2;
+
+          default-lease-time 600;
+          max-lease-time 7200;
+
+          log-facility local7;
+
+          subnet 10.1.1.0 netmask 255.255.255.0 {
+            range 10.1.1.101 10.1.1.200;
+            option routers 10.1.1.2;
+          }
+
+    - name: restart dhcp service
+      become: yes
+      shell: systemctl restart isc-dhcp-server.service
