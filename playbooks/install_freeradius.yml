@@ -1,0 +1,64 @@
+# ansible-playbook -b --private-key ~/.ssh/id_rsa_multipass install_freeradius.yml
+
+---
+- hosts: test
+  vars:
+
+  tasks:
+    - name: install freeradius
+      apt:
+        name: freeradius
+        update_cache: yes
+      become: yes
+
+    - name: backup original clients.conf file
+      become: yes
+      copy:
+        remote_src: yes
+        src: /etc/freeradius/clients.conf
+        dest: /etc/freeradius/clients.conf.bkp
+
+    - name: delete clients.conf file
+      become: yes
+      file:
+        path: /etc/freeradius/clients.conf
+        state: absent
+    
+    - name: add client
+      become: yes
+      blockinfile:
+        path: /etc/freeradius/clients.conf
+        create: yes
+        block: |
+          client OOB {
+            ipaddr = 192.168.0.10
+            secret = secretpassword
+          }
+
+
+    - name: backup original users file
+      become: yes
+      copy:
+        remote_src: yes
+        src: /etc/freeradius/users
+        dest: /etc/freeradius/users.bkp
+
+    - name: delete users file
+      become: yes
+      file:
+        path: /etc/freeradius/users
+        state: absent
+    
+    - name: add users
+      become: yes
+      blockinfile:
+        path: /etc/freeradius/users
+        create: yes
+        block: |
+          sabrin Cleartext-Password := “Password”
+
+
+
+    - name: restart dhcp service
+      become: yes
+      shell: service freeradius start
