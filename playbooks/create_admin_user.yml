@@ -1,0 +1,38 @@
+# ansible-playbook --private-key ~/.ssh/id_rsa --ask-vault-pass create_admin_user.yml
+
+# on MacOS host
+# sudo pip3 install passlib (required on MacOS for encrypted passwords)
+# ansible-vault create password.yml -> add password in plain text
+# ansible-vault view password.yml -> check password
+
+---
+- hosts: ubuntu-server
+
+  vars:
+    src_license_path: "/Users/giancarlo3g/Downloads/Images/VSR-SIM_R20_license.txt"
+
+  tasks:
+    - name: create admin user with passwd
+      user:
+        name: admin
+        home: /home/admin
+        password: "{{ 'admin' | password_hash('sha512') }}" # check vault file for plain text password
+        update_password: always
+
+    - name: create license directory
+      file:
+        path: /home/admin/license
+        state: directory
+        owner: admin
+
+    - name: copy license to server
+      copy:
+        src: "{{ src_license_path }}"
+        dest: /home/admin/license/VSR-SIM_R20_license.txt
+      register: copy_status
+
+    - name: create lab directory for config files
+      file:
+        path: /home/admin/lab
+        state: directory
+        owner: admin
