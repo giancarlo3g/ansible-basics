@@ -1,0 +1,45 @@
+---
+- hosts: vm1
+
+  vars:
+    vm_name: "vsr01"
+    src_image_path: "/var/lib/libvirt/images/sros-vm.qcow2"
+    dst_image_path: "/var/lib/libvirt/images/{{vm_name}}.qcow2"
+
+  tasks:
+    - name: copy sros-vm
+      become: yes
+      copy:
+        remote_src: yes
+        src: "{{ src_image_path }}"
+        dest: "{{ dst_image_path }}"
+      register: copy_status
+
+    - name: "Create virtual machine: {{vm_name}}"
+      become: yes
+      shell:
+        cmd: >-
+            virt-install
+            --name {{vm_name}}
+            --description SROS-VM
+            --sysinfo system.product='TiMOS:slot=A chassis=SR-1 card=iom-1 mda/1=me6-100gb-qsfp28 primary-config=cf3:/config.cfg license-file=cf3:/lic address=192.168.100.11/24@active'
+            --memory 4096
+            --vcpus 2
+            --boot hd
+            --disk path={{dst_image_path}},size=4,bus=virtio
+            --import
+            --graphics none
+            --serial tcp,host=0.0.0.0:5026,mode=bind,protocol=telnet
+            --network bridge:virbr0,model=virtio
+            --network bridge:virbr0,model=virtio
+            --network bridge:virbr0,model=virtio
+            --network bridge:virbr0,model=virtio
+            --network bridge:virbr0,model=virtio
+            --network bridge:virbr0,model=virtio
+
+
+
+    - name: "start vm: {{vm_name}}"
+      virt:
+        name: "{{vm_name}}"
+        state: running
